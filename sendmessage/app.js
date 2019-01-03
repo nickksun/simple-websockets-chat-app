@@ -14,7 +14,20 @@ exports.handler = async (event, context) => {
   let connectionData;
   
   try {
-    connectionData = await ddb.scan({ TableName: TABLE_NAME, ProjectionExpression: 'connectionId' }).promise();
+    // # broadcast message
+    // connectionData = await ddb.scan({ TableName: TABLE_NAME, ProjectionExpression: 'connectionId' }).promise();
+
+    // # one-to-one message
+    let connectionId = event.requestContext.connectionId;
+
+    connectionData = await ddb.query({
+      TableName: TABLE_NAME,
+      KeyConditionExpression: 'connectionId = :s',
+      ExpressionAttributeValues: {
+        ':s': connectionId
+      }
+    }).promise();
+    
   } catch (e) {
     return { statusCode: 500, body: e.stack };
   }
